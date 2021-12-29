@@ -15,6 +15,8 @@ import json
 import time
 # from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
+from Change_language import *
+import csv
 # url = "https://jp.shein.com/DAZY-Solid-Cable-Knit-Drop-Shoulder-Sweater-p-5835597-cat-1734.html?scici=WomenHomePage~~ON_Banner,CN_category,HZ_Knitwear,HI_hotZoneuadal3wddc8~~6_1~~real_2216~~~~"
 
 
@@ -78,33 +80,45 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 # %%
 def Get_sku(soup):
-    sku_doc = soup.find("div", {"class":"product-intro__head-sku-ctn"})
-    sku = sku_doc.text.strip()
-    # 'SKU: sw2109223427331015 (3051 Reviews)'
-    sku = sku.split("(")[0][5:].strip()
+    try:
+        sku_doc = soup.find("div", {"class":"product-intro__head-sku-ctn"})
+        sku = sku_doc.text.strip()
+        # 'SKU: sw2109223427331015 (3051 Reviews)'
+        sku = sku.split("(")[0][5:].strip()
+    except Exception as e:
+        sku = ""
     return sku
 
 # %%
 #pirce
 def Get_price(soup):
-    price_doc = soup.find("div", {"class":"original"})
-    price = price_doc.text.strip()
+    try:
+        price_doc = soup.find("div", {"class":"original"})
+        price = price_doc.text.strip()
+    except Exception as e:
+        price =""
     return price
 
 
 # %%
 # brand
 def Get_brand(soup):
-    brand_doc = soup.find("div", {"class":"product-intro__brand-name"})
-    brand = brand_doc.text.strip()
+    try:
+        brand_doc = soup.find("div", {"class":"product-intro__brand-name"})
+        brand = brand_doc.text.strip()
+    except Exception as e: 
+        brand = ""
     return brand
 # %%
 # 重构title 品牌都大些情况, DAZY 标题 Dazy-Less
 def Get_new_title(soup,brand):
-    title_doc = soup.find("div", {"class":"product-intro__head-name"})
-    title_n  = title_doc.text.strip()
-    # 因为日文转换大些不影响,所有可以标题都转换大些
-    title = title_n.upper().replace(brand.upper(), "").strip()
+    try:
+        title_doc = soup.find("div", {"class":"product-intro__head-name"})
+        title_n  = title_doc.text.strip()
+        # 因为日文转换大些不影响,所有可以标题都转换大些
+        title = title_n.upper().replace(brand.upper(), "").strip()
+    except Exception as e:
+        title = ""
     return title
 
 
@@ -228,13 +242,14 @@ def Get_color_image(soup):
     other_image_docs = soup.find_all("div",{"class":"product-intro__thumbs-item"})
     other_images = []
     for doc in other_image_docs:
-        image = "https:" + doc.img.get("src")
-        big_image = image.split("_thumb")[0] + ".jpg"
-        other_images.append(big_image)
+        doc = doc.find('img')
+        if "src" in str(doc):
+            image = "https:" + doc.get("src")
+            big_image = image.split("_thumb")[0] + ".jpg"
+            other_images.append(big_image)
     return other_images
 # %%
-def Get_result_row(soup, color):
-    soup = BeautifulSoup(brower.page_source, "lxml")
+def Get_result_row(soup, color, url):
     sku = Get_sku(soup)
     brand = Get_brand(soup)
     price = Get_price(soup)
@@ -258,6 +273,7 @@ def Get_result_row(soup, color):
 
     # 子产品
     for item in size_names:
+        n_url = url
         n_size_name = item
         n_sku = sku + "-" + str(item)
         n_brand = brand
@@ -273,7 +289,7 @@ def Get_result_row(soup, color):
         n_image5 = Get_image_link(5)
         n_image6 = Get_image_link(6)
         n_image7 = Get_image_link(7)
-        data = [n_sku, n_brand, n_price, n_title, n_bullet_point, n_description, n_size_name, color, n_image0,n_image1, n_image2
+        data = [n_url, n_sku, n_brand, n_price, n_title, n_bullet_point, n_description, n_size_name, color, n_image0,n_image1, n_image2
                 , n_image3,n_image4, n_image5, n_image6, n_image7]
         shein_datas.append(data)
     # ic(shein_datas)
@@ -284,35 +300,47 @@ def Get_result_row(soup, color):
 
 # %%
 # 引入改变语言模块
-from Change_language import *
-
-url = "https://jp.shein.com/Dazy-Less-Solid-Drop-Shoulder-Sweater-p-4634412-cat-1734.html?scici=WomenHomePage~~ON_Banner,CN_category,HZ_Knitwear,HI_hotZoneuadal3wddc8~~6_1~~real_2216~~~~"
-path = "/home/dav/Downloads/chromedriver" 
-brower = webdriver.Chrome(executable_path=path)
-# 改变语言为日语
-change_Janpn = Change_language()
-change_Janpn.load(brower, url)
-datas = []
-# 找到所有颜色
-elements = brower.find_elements_by_xpath("/html/body/div[1]/div[1]/div/div[1]/div/div[2]/div[2]/div/div[2]/div[1]/div[2]/div")
-for i in range(len(elements)):
-    elements[i].click()
-    time.sleep(10)
-    # js重新加载网页,网页内容会变化,如果还用之前的soup数据不会变化
-    soups = BeautifulSoup(brower.page_source, "lxml")
-    color = soups.find("span", {"class" : "color-999"}).text.strip()
-    data = Get_result_row(soups,color)
-    # datas.append(data)
-    datas += data
+def Get_Deatil_Info(brower, url):
+    # url = "https://jp.shein.com/Drop-Shoulder-Eyelet-Detail-Sweater-p-4339026-cat-1734.html?scici=productDetail~~RecommendList~~RS_emarsys,RJ_NoFaultTolerant~~Customers%20Also%20Viewed~~SPcProductDetailCustomersAlsoViewedList~~0"
+    # path = "/home/dav/Downloads/chromedriver" 
+    # brower = webdriver.Chrome(executable_path=path)
+    # 改变语言为日语
+    # change_Janpn = Change_language()
+    # change_Janpn.load(brower, url)
+    datas = []
+    # 找到所有颜色
+    elements = brower.find_elements_by_xpath("/html/body/div[1]/div[1]/div/div[1]/div/div[2]/div[2]/div/div[2]/div[1]/div[2]/div")
+    for i in range(len(elements)):
+        try:
+            elements[i].click()
+            time.sleep(5)
+            # js重新加载网页,网页内容会变化,如果还用之前的soup数据不会变化
+            soups = BeautifulSoup(brower.page_source, "lxml")
+            color = soups.find("span", {"class" : "color-999"}).text.strip()
+            data = Get_result_row(soups,color, url)
+            # datas.append(data)
+            datas += data
+        except Exception as e:
+            soup = BeautifulSoup(brower.page_source, "lxml")
+            color = ""
+            data = Get_result_row(soup, color, url)
+            datas += data
+    parent =[item for item in datas[0]]
+    parent[1] = parent[1].split("-")[0]
+    parent[3] = ""
+    parent[7] = ""
+    parent[8] = ""
+    datas.insert(0,parent)
+    return datas
 
 # %%
-import csv
-with open("reslut.csv", "w", encoding="utf-8") as f:
-    writer = csv.writer(f)
-    writer.writerow(["sku", "brand", "price", "title", "bullet_point", "description","size_name","color","image1", "image2", "image3", "image4", "image5", "image6", "image7", "image8"])
-    for row in datas:
-        writer.writerow(row)
-f.close()
+def Writ2Csv(datas):
+    with open("reslut.csv", "w", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["url","sku", "brand", "price", "title", "bullet_point", "description","size_name","color","image1", "image2", "image3", "image4", "image5", "image6", "image7", "image8"])
+        for row in datas:
+            writer.writerow(row)
+    f.close()
 
 # %%
 # TODO: 重构数据  <26-12-21, yuzhe> #

@@ -19,16 +19,16 @@ class Change_language():
     def load(self, brower, url):
         if brower != None and url != "":
 
-            brower.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-                "source": """
-                Object.defineProperty(navigator, 'webdriver', {
-                  get: () => undefined
-                })
-              """
+            # brower.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+                # "source": """
+                # Object.defineProperty(navigator, 'webdriver', {
+                  # get: () => undefined
+                # })
+              # """
 
-            })
+            # })
             brower.get(url)
-            time.sleep(2)
+            time.sleep(3)
 
             # 等待弹窗, 点击关闭按钮
             try:
