@@ -323,11 +323,11 @@ def Get_Deatil_Info(brower, url):
     list_color = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"]
     colors = []  #存放颜色,防止一个listing颜色重复
     # 找到所有颜色
-    elements = brower.find_elements_by_xpath("/html/body/div[1]/div[1]/div/div[1]/div/div[2]/div[2]/div/div[2]/div[1]/div[2]/div")
+    elements = brower.find_elements_by_xpath("//div[1]/div[1]/div/div[1]/div/div[2]/div[2]/div/div[2]/div[1]/div[2]/div/div[1]")
     for i in range(len(elements)):
         try:
             elements[i].click() #点击颜色
-            time.sleep(5)
+            time.sleep(2)
             # js重新加载网页,网页内容会变化,如果还用之前的soup数据不会变化
             soups = BeautifulSoup(brower.page_source, "lxml")
             color = soups.find("span", {"class" : "color-999"}).text.strip()

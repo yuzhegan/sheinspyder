@@ -28,14 +28,14 @@ class Change_language():
 
             # })
             brower.get(url)
-            time.sleep(3)
+            # time.sleep(3)
 
             # 等待弹窗, 点击关闭按钮
             try:
                 WebDriverWait(brower, 10).until(EC.presence_of_element_located(
                   (By.CLASS_NAME, "c-coupon-box")))
                 brower.find_element_by_xpath("/html/body/div[1]/div[3]/div[1]/div/i").click()
-                time.sleep(3)
+                # time.sleep(3)
             except Exception as e:
                 print(e)
 
@@ -44,7 +44,7 @@ class Change_language():
                 # WebDriverWait(brower,10).until(EC.presence_of_element_located(
                     # (By.CLASS_NAME, "iconfont-critical icon-head-global")))
                 brower.find_element_by_xpath("/html/body/div[1]/header/div[2]/div[1]/div/div[1]/div/div[3]/div[5]/a/span/i").click()
-                time.sleep(5)
+                # time.sleep(5)
 
             except Exception as e:
                 print(e)
@@ -54,7 +54,7 @@ class Change_language():
                 # WebDriverWait(brower, 10).until(EC.presence_of_element_located(
                   # (By.CLASS_NAME, "col-xs-4 j-change-language")))
                 brower.find_element_by_xpath("/html/body/div[1]/header/div[2]/div[1]/div/div[1]/div/div[3]/div[5]/div/div[4]/a[2]").click()
-                time.sleep(5)
+                # time.sleep(5)
             except Exception as e:
                 print(e)
 
