@@ -93,10 +93,14 @@ def Get_sku(soup):
 #pirce
 def Get_price(soup):
     try:
-        price_doc = soup.find("div", {"class":"original"})
+        price_doc = soup.find("div", {"class":"original"}) #原价
         price = price_doc.text.strip()
     except Exception as e:
-        price =""
+        try:
+            price_doc = soup.find("del", {"class":"del-price"}) #打折价格, 取打折之前价格
+            price = price_doc.text.strip()
+        except Exception as e: 
+            price =""
     return price
 
 
@@ -113,7 +117,7 @@ def Get_brand(soup):
 # 重构title 品牌都大些情况, DAZY 标题 Dazy-Less
 def Get_new_title(soup,brand):
     try:
-        title_doc = soup.find("div", {"class":"product-intro__head-name"})
+        title_doc = soup.find("h1", {"class":"product-intro__head-name"})
         title_n  = title_doc.text.strip()
         # 因为日文转换大些不影响,所有可以标题都转换大些
         title = title_n.upper().replace(brand.upper(), "").strip()
@@ -152,24 +156,28 @@ def Get_size_name(soup):
 
 # %%
 # 获取描述,详情
+#  详情用作字典来写入bullet_point , 返回列表来写入description 给两个返回值
 def Get_desc(soup):
     desc_docs = soup.find_all("div", {"class":"product-intro__description-table-item"})
     descs = []
+    dic_desc = {}
     for doc in desc_docs:
         key = doc.find("div", {"class":"key"}).text.strip(":").strip()
         value = doc.find("div", {"class":"val"}).text.strip()
-        data = {"key":key, "value":value} 
+        data = {"key": key, "value": value} #存入字典
         descs.append(data)
-    return descs
+        dic_desc = {**{key:value}, **dic_desc}
+    return [descs, dic_desc]
 
 # %%
-#  转字符串存储, "|"分割表示
+# 字典转字符串 descs为字典 
 def Get_Desc_str(descs):
-    str_descs = ""
-    for item in descs:
-        priex = str(item) + "|"
-        str_descs +=  priex
-    str_descs = str_descs.strip("|") #最后那个|要删除
+    str_descs = str(descs)
+    # str_descs = ""
+    # for item in descs:
+        # priex = str(item) + "|"
+        # str_descs +=  priex
+    # str_descs = str_descs.strip("|") #最后那个|要删除
     return str_descs
 
 # %%
@@ -244,7 +252,10 @@ def Get_color_image(soup):
     for doc in other_image_docs:
         doc = doc.find('img')
         if "src" in str(doc):
-            image = "https:" + doc.get("src")
+            try:
+                image = "https:" + doc.get("src")
+            except Exception as e:
+                image = "https"  + doc.get("data-src")
             big_image = image.split("_thumb")[0] + ".jpg"
             other_images.append(big_image)
     return other_images
@@ -255,8 +266,9 @@ def Get_result_row(soup, color, url):
     price = Get_price(soup)
     new_title = Get_new_title(soup, brand)
     size_names = Get_size_name(soup)
-    desc = Get_desc(soup)
-    bullet_point = Get_Desc_str(desc)
+    desc_list = Get_desc(soup)
+    desc = desc_list[0]
+    bullet_point = Get_Desc_str(desc_list[1])
     amz_desc = Get_Amz_desc(desc)
     size_chart = Get_Size_Chart(soup)
     description = Get_Amz_Description(size_chart, amz_desc)
@@ -308,19 +320,29 @@ def Get_Deatil_Info(brower, url):
     # change_Janpn = Change_language()
     # change_Janpn.load(brower, url)
     datas = []
+    list_color = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"]
+    colors = []  #存放颜色,防止一个listing颜色重复
     # 找到所有颜色
     elements = brower.find_elements_by_xpath("/html/body/div[1]/div[1]/div/div[1]/div/div[2]/div[2]/div/div[2]/div[1]/div[2]/div")
     for i in range(len(elements)):
         try:
-            elements[i].click()
+            elements[i].click() #点击颜色
             time.sleep(5)
             # js重新加载网页,网页内容会变化,如果还用之前的soup数据不会变化
             soups = BeautifulSoup(brower.page_source, "lxml")
             color = soups.find("span", {"class" : "color-999"}).text.strip()
+            if color not in colors: # 防止一个listing颜色重复, 重复则颜色后+a
+                colors.append(color)
+            else:
+                for i in range(8):
+                    color = color + list_color[i]
+                    if color not in colors:
+                        break
+                colors.append(color)
             data = Get_result_row(soups,color, url)
             # datas.append(data)
             datas += data
-        except Exception as e:
+        except Exception as e:   #只有单个颜色
             soup = BeautifulSoup(brower.page_source, "lxml")
             color = ""
             data = Get_result_row(soup, color, url)
