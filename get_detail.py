@@ -327,7 +327,7 @@ def Get_Deatil_Info(brower, url):
     for i in range(len(elements)):
         try:
             elements[i].click() #点击颜色
-            time.sleep(2)
+            time.sleep(3)
             # js重新加载网页,网页内容会变化,如果还用之前的soup数据不会变化
             soups = BeautifulSoup(brower.page_source, "lxml")
             color = soups.find("span", {"class" : "color-999"}).text.strip()

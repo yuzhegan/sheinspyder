@@ -12,7 +12,7 @@ import csv
 
 def get_urls(url):
     datas = []
-    for i in range(1,2):
+    for i in range(2,4):
         links = url + str(i)
         res = requests.get(links)
         res.encoding = 'utf-8'
