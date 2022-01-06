@@ -120,7 +120,8 @@ def Get_new_title(soup,brand):
         title_doc = soup.find("h1", {"class":"product-intro__head-name"})
         title_n  = title_doc.text.strip()
         # 因为日文转换大些不影响,所有可以标题都转换大些
-        title = title_n.upper().replace(brand.upper(), "").strip()
+        title = title_n.upper().replace(brand.upper(), "").strip() #第三方有品牌的
+        title = title_n.upper().replace("shein".upper(), "").strip() #shein自营的
     except Exception as e:
         title = ""
     return title
@@ -200,7 +201,7 @@ def Get_Amz_desc(descs):
 
 def add_space(n):
     string =""
-    for i in range(n+6):   #日文字符和英文数字占位大小不一样 测试+4比较合理
+    for i in range(n+3):   #日文字符和英文数字占位大小不一样 测试+4比较合理
         string += "&nbsp;"
     return string
 
@@ -229,7 +230,7 @@ def Get_Size_Chart(soup):
     for i in range(len(rows)):
         for j in range(len(rows[i])):
             if i == 0: 
-                td_html = rows[i][j] + "&nbsp;&nbsp;&nbsp;"
+                td_html = rows[i][j] + "&nbsp;"
                 tables += td_html
             else: 
                 need_space = len(rows[0][j]) - len(rows[i][j])
@@ -290,7 +291,7 @@ def Get_result_row(soup, color, url):
         n_sku = sku + "-" + str(item)
         n_brand = brand
         n_price = price
-        n_title = new_title
+        n_title = new_title + " " + color + " " + n_size_name #title add color & size
         n_bullet_point = bullet_point
         n_description = description
         n_image0 = Get_image_link(0)
@@ -311,7 +312,6 @@ def Get_result_row(soup, color, url):
 
 
 # %%
-# 引入改变语言模块
 def Get_Deatil_Info(brower, url):
     # url = "https://jp.shein.com/Drop-Shoulder-Eyelet-Detail-Sweater-p-4339026-cat-1734.html?scici=productDetail~~RecommendList~~RS_emarsys,RJ_NoFaultTolerant~~Customers%20Also%20Viewed~~SPcProductDetailCustomersAlsoViewedList~~0"
     # path = "/home/dav/Downloads/chromedriver" 

@@ -9,7 +9,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 import time
-from selenium.webdriver.common.action_chains import ActionChains #引入ActionChains包
 
 
 
@@ -41,12 +40,23 @@ class Change_language():
                 print(e)
 
             # 切换语言为日语 点击语言列表
-            ele = brower.find_element_by_xpath("/html/body/div[1]/header/div[2]/div[1]/div/div[1]/div/div[3]/div[5]/a/span/i")
-            ActionChains(brower).move_to_element(ele).perform() #让鼠标悬停在ele上
-            # brower.find_element_by_xpath("//div[2]/div[1]/div/div[1]/div/div[3]/div[5]/a/span/i").click()
-            # time.sleep(1)
-            brower.find_element_by_xpath("//div[2]/div[1]/div/div[1]/div/div[3]/div[5]/div/div[4]/a[2]").click()
-            # time.sleep(3)
+            try:
+                # WebDriverWait(brower,10).until(EC.presence_of_element_located(
+                    # (By.CLASS_NAME, "iconfont-critical icon-head-global")))
+                brower.find_element_by_xpath("/html/body/div[1]/header/div[2]/div[1]/div/div[1]/div/div[3]/div[5]/a/span/i").click()
+                # time.sleep(5)
+
+            except Exception as e:
+                print(e)
+            # 切换语言为日语
+
+            try:
+                # WebDriverWait(brower, 10).until(EC.presence_of_element_located(
+                  # (By.CLASS_NAME, "col-xs-4 j-change-language")))
+                brower.find_element_by_xpath("/html/body/div[1]/header/div[2]/div[1]/div/div[1]/div/div[3]/div[5]/div/div[4]/a[2]").click()
+                # time.sleep(5)
+            except Exception as e:
+                print(e)
 
 
 # if __name__ =="__main__":
